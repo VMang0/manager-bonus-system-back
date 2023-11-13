@@ -10,9 +10,9 @@ userRouter.post('/registration',
   UserController.registration)
 userRouter.post('/login', UserController.login)
 userRouter.post('/logout', UserController.logout)
-userRouter.get('/activate/:link', UserController.activate)
 userRouter.get('/refresh', UserController.refresh)
 userRouter.get('/users/activate/:company', UserController.getUsersForActivate)
 userRouter.post('/user/verify', UserController.verifyUser)
-
+userRouter.post('/add/manager', UserController.addManager)
+userRouter.post('/manager/verify', UserController.verifyManager)
 export default userRouter;
