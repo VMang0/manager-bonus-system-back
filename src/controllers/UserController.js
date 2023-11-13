@@ -87,6 +87,25 @@ class UserController {
     }
   }
 
+  async addManager(req, res, next) {
+    try {
+      const {email, company} = req.body;
+      const userData = await userService.addManager(email, company);
+      return res.json(userData);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async verifyManager(req, res, next) {
+    try {
+      const { link, email, password, company } = req.body;
+      const userData = await userService.verifyManager(link, email, password, company);
+      return res.json(userData);
+    } catch (e) {
+      next(e);
+    }
+  }
 
   /*async create(req, res){
     await UserService.create(req.body)

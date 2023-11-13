@@ -5,20 +5,20 @@ import mailService from "./MailService.js";
 import tokenService from "./TokenService.js";
 import UserDTO from "../dtos/UserDTO.js";
 import ApiErrors from "../exceptions/api-errors.js";
-import tokenSchema from "../entites/TokenSchema.js";
-import CompanySchema from "../entites/CompanySchema.js";
 import userInfoService from "./UserInfoService.js";
+import CompanySchema from "../entites/CompanySchema.js";
 
 class UserService {
 
-  async registration(email, password, company, role) {
+  async registration(email, password, companyName, role) {
     const candidate = await UserSchema.findOne({email})
     if(candidate) {
       throw ApiErrors.BadRequest(`Пользователь с почтовым индексов ${email} уже существует`)
     }
     const hashPassword = await bcrypt.hash(password, 3);
     const activationLink = v4();
-    const user = await UserSchema.create({email, password: hashPassword, activationLink, company, role});
+    const company = await CompanySchema.findOne({name: companyName})
+    const user = await UserSchema.create({email, password: hashPassword, activationLink, company: company._id, role});
     //await mailService.sendActivationMail(email, `${process.env.API_URL}/api/activate/${activationLink}`);
     const userDto = new UserDTO(user);
     const tokens = tokenService.generateToken({...userDto});
@@ -98,6 +98,39 @@ class UserService {
     await mailService.sendVerifyInfo(user.email);
     const users = await UserSchema.find({company: updatedUser.company, isActivated: false, role: 'employee'});
     return users;
+  }
+
+  async addManager(email, company) {
+    const candidate = await UserSchema.findOne({email})
+    if(candidate) {
+      throw ApiErrors.BadRequest(`Пользователь с почтовым индексов ${email} уже существует`)
+    }
+    const activationLink = v4();
+    const companyFind = await CompanySchema.findOne({name: company});
+
+    const user = await UserSchema.create({email, activationLink, role: 'manager', company: companyFind._id });
+    await mailService.sendActivationMail(email, `${process.env.CLIENT_URL}/registration/${activationLink}`);
+    return user;
+  }
+
+  async verifyManager(link, email, password, companyName) {
+    const candidate = await UserSchema.findOne({email})
+    if(candidate && candidate.password) {
+      throw ApiErrors.BadRequest(`Пользователь с почтовым индексов ${email} уже существует`)
+    }
+    const company = await CompanySchema.findById(candidate.company)
+    if (company.name !== companyName) {
+      throw ApiErrors.BadRequest(`Ваш аккаунт не связан с компанией ${companyName}`)
+    }
+    if(candidate.activationLink !== link) {
+      throw ApiErrors.BadRequest('Некорректная ссылка активация')
+    }
+    const hashPassword = await bcrypt.hash(password, 3);
+    const updatedUser = await UserSchema.findByIdAndUpdate(candidate._id, {isActivated: true, password: hashPassword });
+    const userDto = new UserDTO(updatedUser);
+    const tokens = tokenService.generateToken({...userDto});
+    await tokenService.saveToken(userDto.id, tokens.refreshToken);
+    return{user: userDto}
   }
 
 /*
