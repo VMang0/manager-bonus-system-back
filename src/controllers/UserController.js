@@ -1,7 +1,6 @@
 import userService from "../services/UserService.js";
 import {validationResult} from "express-validator";
 import ApiErrors from "../exceptions/api-errors.js";
-import tokenSchema from "../entites/TokenSchema.js";
 
 class UserController {
 
@@ -39,29 +38,13 @@ class UserController {
       next(e);
     }
   }
-  async activate(req, res,next) {
-    try {
-      const activationLink = req.params.link;
-      await userService.activate(activationLink);
-      return res.redirect(process.env.CLIENT_URL)
-    } catch (e) {
-      next(e);
-    }
-  }
+
   async refresh(req, res,next) {
     try {
       const {refreshToken} = req.cookies;
       const userData  = await userService.refresh(refreshToken);
       res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
       return res.json(userData);
-    } catch (e) {
-      next(e);
-    }
-  }
-  async getUsers(req, res, next) {
-    try {
-      const users = await userService.getAll();
-      return res.json(users);
     } catch (e) {
       next(e);
     }
@@ -106,37 +89,23 @@ class UserController {
       next(e);
     }
   }
-
-  /*async create(req, res){
-    await UserService.create(req.body)
-      .then(user => res.json(user))
-      .catch(e => res.status(500).json(e))
+  async getUserInfo(req, res, next) {
+    try {
+      const id = req.params.id;
+      const userData = await userService.getUserInfo(id);
+      return res.json(userData);
+    } catch (e) {
+      next(e);
+    }
   }
-
-  async getAll(req, res) {
-    await UserService.getAll()
-      .then(users => res.json(users))
-      .catch(e => res.status(500).json(e))
+  async getManagers(req, res, next) {
+    try {
+      const userData = await userService.getManagers();
+      return res.json(userData);
+    } catch (e) {
+      next(e);
+    }
   }
-
-  async getOne(req, res) {
-    await UserService.getOne(req.params.id)
-      .then(user => res.json(user))
-      .catch(e => res.status(500).json(e))
-  }
-
-  async update(req, res) {
-    await UserService.update(req.body)
-      .then(user => res.json(user))
-      .catch(e => res.status(500).json(e.message))
-  }
-
-  async delete(req, res) {
-    await UserService.delete(req.params.id)
-      .then(user => res.json(user))
-      .catch(e => res.status(500).json(e))
-  }*/
-
 }
 
 export default new UserController();

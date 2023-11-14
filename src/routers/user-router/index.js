@@ -15,4 +15,6 @@ userRouter.get('/users/activate/:company', UserController.getUsersForActivate)
 userRouter.post('/user/verify', UserController.verifyUser)
 userRouter.post('/add/manager', UserController.addManager)
 userRouter.post('/manager/verify', UserController.verifyManager)
+userRouter.get('/user/:id', UserController.getUserInfo)
+userRouter.get('/manager/all', UserController.getManagers)
 export default userRouter;

@@ -7,6 +7,7 @@ import UserDTO from "../dtos/UserDTO.js";
 import ApiErrors from "../exceptions/api-errors.js";
 import userInfoService from "./UserInfoService.js";
 import CompanySchema from "../entites/CompanySchema.js";
+import UserInfoSchema from "../entites/UserInfoSchema.js";
 
 class UserService {
 
@@ -19,20 +20,10 @@ class UserService {
     const activationLink = v4();
     const company = await CompanySchema.findOne({name: companyName})
     const user = await UserSchema.create({email, password: hashPassword, activationLink, company: company._id, role});
-    //await mailService.sendActivationMail(email, `${process.env.API_URL}/api/activate/${activationLink}`);
     const userDto = new UserDTO(user);
     const tokens = tokenService.generateToken({...userDto});
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
     return{...tokens, user: userDto}
-  }
-
-  async activate(activationLink) {
-    const user = await UserSchema.findOne({activationLink});
-    if(!user) {
-      throw ApiErrors.BadRequest('Некорректная ссылка активация')
-    }
-    user.isActivated = true;
-    await user.save();
   }
 
   async login(email, password) {
@@ -54,8 +45,7 @@ class UserService {
   }
 
   async logout(refreshToken) {
-    const token = await tokenService.removeToken(refreshToken);
-    return token;
+    return tokenService.removeToken(refreshToken);
   }
 
   async refresh(refreshToken) {
@@ -74,15 +64,8 @@ class UserService {
     return {...tokens, user: userDto}
   }
 
-  async getAll() {
-    const users = await UserSchema.find();
-    return users;
-  }
-
-
   async getUsersForActivate(company_id) {
-    const users = await UserSchema.find({company: company_id, isActivated: false, role: 'employee'});
-    return users;
+    return UserSchema.find({company: company_id, isActivated: false, role: 'employee'});
   }
 
   async verify(id, info) {
@@ -94,10 +77,9 @@ class UserService {
       throw ApiErrors.BadRequest('Пользователь активирован!')
     }
     const userInfo = await userInfoService.add(info);
-    const updatedUser = await UserSchema.findByIdAndUpdate(user._id, {isActivated: true, info: userInfo._id});
+    const updatedUser = await UserSchema.findByIdAndUpdate(user._id, {isActivated: true, info: userInfo._id, scope: 0});
     await mailService.sendVerifyInfo(user.email);
-    const users = await UserSchema.find({company: updatedUser.company, isActivated: false, role: 'employee'});
-    return users;
+    return UserSchema.find({company: updatedUser.company, isActivated: false, role: 'employee'});
   }
 
   async addManager(email, company) {
@@ -133,45 +115,23 @@ class UserService {
     return{user: userDto}
   }
 
-/*
-  async create(user){
-    /!*if (picture) {
-      fileName = FileService.saveFile(picture);
-    }*!/
-    const  createdUser = await User.create({...user, status: false})
-    return createdUser;
-  }
-
-  async getAll() {
-    const users = await User.find().populate('company');
-    return users;
-  }
-
-  async getOne(id) {
-    if (!id) {
-      throw new Error('id не указан ');
+  async getUserInfo(id) {
+    const candidate = await UserSchema.findById(id)
+    if(!candidate) {
+      throw ApiErrors.BadRequest(`Пользователя не существует`)
     }
-    const user = await User.findById(id)
+    const userInfo = UserInfoSchema.findById(candidate.info);
+    if(!userInfo) {
+      throw ApiErrors.BadRequest(`У пользователя нет дополнительной информации`)
+    }
+    return userInfo;
+  }
+  ////ПОМЕНЯТЬ НА МЕНЕДЖЕРА
+  async getManagers() {
+    return UserSchema.find({isActivated: true, role: 'employee'})
       .populate('company')
-    return user;
+      .populate('info');
   }
-
-  async update(user) {
-    if (!user._id) {
-      throw new Error('id не указан ');
-    }
-    const updatedUser = await User.findByIdAndUpdate(user._id, user);
-    return updatedUser;
-  }
-
-  async delete(id) {
-    if (!id) {
-      throw new Error('id не указан ');
-    }
-    const user = await User.findByIdAndDelete(id);
-    return user;
-  }
-*/
 }
 
 export default new UserService();
