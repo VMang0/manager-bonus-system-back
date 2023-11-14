@@ -1,35 +1,31 @@
-import CompanyService from "../services/CompanyService.js";
+import companyService from "../services/CompanyService.js";
+import {validationResult} from "express-validator";
+import ApiErrors from "../exceptions/api-errors.js";
 
 class CompanyController {
-  async create(req, res){
-    await CompanyService.create(req.body)
-      .then(company => res.json(company))
-      .catch(e => res.status(500).json(e))
+
+  async add(req, res, next){
+    try {
+      const errors = validationResult(req);
+      if(!errors.isEmpty()) {
+        return next(ApiErrors.BadRequest('Ошибка при валидации', errors.array()))
+      }
+      const { name } = req.body;
+      const company = await companyService.add(name);
+      return res.json(company);
+    } catch (e) {
+      next(e)
+    }
   }
 
-  async getAll(req, res) {
-    await CompanyService.getAll()
-      .then(company => res.json(company))
-      .catch(e => res.status(500).json(e))
-  }
-
-  async getOne(req, res) {
-    await CompanyService.getOne(req.params.id)
-      .then(company => res.json(company))
-      .catch(e => res.status(500).json(e))
-  }
-
-  async update(req, res) {
-    await CompanyService.update(req.body)
-      .then(company => res.json(company))
-      .catch(e => res.status(500).json(e.message))
-  }
-
-  async delete(req, res) {
-    await CompanyService.delete(req.params.id)
-      .then(company => res.json(company))
-      .catch(e => res.status(500).json(e))
+  async getAll(req, res, next){
+    try {
+      const companies = await companyService.getAll();
+      return res.json(companies);
+    } catch (e) {
+      next(e)
+    }
   }
 }
 
-export default new CompanyController();
+export default new CompanyController()
