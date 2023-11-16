@@ -106,6 +106,16 @@ class UserController {
       next(e);
     }
   }
+
+  async getEmployeesForCompany(req, res, next) {
+    try {
+      const company = req.params.company;
+      const userData = await userService.getEmployeesForCompany(company);
+      return res.json(userData);
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 export default new UserController();
