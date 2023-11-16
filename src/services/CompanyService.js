@@ -8,8 +8,8 @@ class CompanyService {
     if (company) {
       throw ApiErrors.BadRequest(`Компания ${name} уже существует в системе!`)
     }
-    const user = await CompanySchema.create({name});
-    return user;
+    const company_ = await CompanySchema.create({name});
+    return company_;
   }
   async getAll() {
     const companies = await CompanySchema.find()

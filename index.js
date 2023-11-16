@@ -8,6 +8,9 @@ import cookieParser from 'cookie-parser';
 import errorMiddlewares from "./src/middlewares/error-middlewares.js";
 import userRouter from "./src/routers/user-router/index.js";
 import companyRouter from "./src/routers/company-router/index.js";
+import categoryRouter from "./src/routers/category-router/index.js";
+import priorityRouter from "./src/routers/priority-router/index.js";
+import projectRouter from "./src/routers/project-router/index.js";
 
 const port = process.env.PORT || 5000;
 const app = express();
@@ -23,6 +26,9 @@ app.use(cors({
 
 app.use('/api', userRouter)
 app.use('/api/company', companyRouter)
+app.use('/api/category', categoryRouter)
+app.use('/api/priority', priorityRouter)
+app.use('/api/project', projectRouter)
 
 app.use(errorMiddlewares);
 
