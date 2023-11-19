@@ -9,6 +9,7 @@ const UserSchema = new Schema({
   company: { type: Schema.Types.ObjectId, ref: 'Company' },
   info: { type: Schema.Types.ObjectId, ref: 'UserInfo' },
   date: { type: Date, default: new Date() },
+  image: { type: String },
 });
 
 export default model('User', UserSchema)

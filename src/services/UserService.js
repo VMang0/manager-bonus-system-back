@@ -126,11 +126,23 @@ class UserService {
     }
     return userInfo;
   }
-  ////ПОМЕНЯТЬ НА МЕНЕДЖЕРА
+
   async getManagers() {
-    return UserSchema.find({isActivated: true, role: 'employee'})
+    return UserSchema.find({isActivated: true, role: 'manager'})
       .populate('company')
       .populate('info');
+  }
+  async getEmployeesForCompany(company) {
+    const users = await UserSchema.find({isActivated: true, role: 'employee', company})
+      .populate('company')
+      .populate('info');
+    const pm = users.filter(user => {
+      return user.info.position === 'Project manager';
+    });
+    const employees = users.filter(user => {
+      return user.info.position !== 'Project manager';
+    });
+    return { pm, employees}
   }
 }
 

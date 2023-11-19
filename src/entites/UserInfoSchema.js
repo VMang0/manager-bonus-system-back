@@ -6,7 +6,7 @@ const UserInfoSchema = new Schema({
   birthday: { type: Date, required: true },
   workday: { type: Date, required: true },
   position: { type: String, required: true },
-  rang: { type: String, required: true },
+  rang: { type: String },
   salary: { type: Number, required: true },
   scope: { type: Number },
 });
