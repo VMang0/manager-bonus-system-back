@@ -11,13 +11,14 @@ import companyRouter from "./src/routers/company-router/index.js";
 import categoryRouter from "./src/routers/category-router/index.js";
 import priorityRouter from "./src/routers/priority-router/index.js";
 import projectRouter from "./src/routers/project-router/index.js";
+import bonusRouter from "./src/routers/bonus-router/index.js";
 
 const port = process.env.PORT || 5000;
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-//app.use(express.static('static'));
+app.use(express.static('static/users-images'));
 app.use(fileUpload({}));
 app.use(cors({
   credentials: true,
@@ -29,6 +30,7 @@ app.use('/api/company', companyRouter)
 app.use('/api/category', categoryRouter)
 app.use('/api/priority', priorityRouter)
 app.use('/api/project', projectRouter)
+app.use('/api/bonus', bonusRouter)
 
 app.use(errorMiddlewares);
 
