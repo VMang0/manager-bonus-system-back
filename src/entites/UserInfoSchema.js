@@ -8,7 +8,6 @@ const UserInfoSchema = new Schema({
   position: { type: String, required: true },
   rang: { type: String },
   salary: { type: Number, required: true },
-  scope: { type: Number },
 });
 
 export default model('UserInfo', UserInfoSchema);

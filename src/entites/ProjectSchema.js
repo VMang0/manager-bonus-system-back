@@ -7,10 +7,10 @@ const ProjectSchema = new Schema({
   priority: { type: Schema.Types.ObjectId, ref: 'Priority' },
   dateStart: { type: Date, default: new Date() },
   dateFinish: { type: Date, default: new Date() },
-  dateCreate: { type: Date, default: new Date() },
   pm: { type: Schema.Types.ObjectId, ref: 'User' },
   creator: { type: Schema.Types.ObjectId, ref: 'User' },
-  customer: { type: String, require: true }
-});
-
+  customer: { type: String, require: true },
+},
+  { timestamps: true }
+);
 export default model('Project', ProjectSchema)

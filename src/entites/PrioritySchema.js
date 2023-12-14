@@ -6,8 +6,8 @@ const PrioritySchema = new Schema({
 
 const defaultPriorities = [
   { name: 'high' },
-  { name: 'critical ' },
-  { name: 'strategic ' },
+  { name: 'critical' },
+  { name: 'normal' },
 ];
 
 const PriorityModel = model('Priority', PrioritySchema);

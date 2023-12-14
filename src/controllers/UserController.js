@@ -116,6 +116,17 @@ class UserController {
       next(e);
     }
   }
+
+  async getEmployeesWithoutUsersAndManager(req, res, next) {
+    try {
+      const user = req.params.user;
+      const project = req.params.project;
+      const userData = await userService.getEmployeesWithoutUsersAndManager(user, project);
+      return res.json(userData);
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 export default new UserController();
