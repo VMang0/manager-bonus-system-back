@@ -8,6 +8,8 @@ import ApiErrors from "../exceptions/api-errors.js";
 import userInfoService from "./UserInfoService.js";
 import CompanySchema from "../entites/CompanySchema.js";
 import UserInfoSchema from "../entites/UserInfoSchema.js";
+import TeamSchema from "../entites/TeamSchema.js";
+import ProjectSchema from "../entites/ProjectSchema.js";
 
 class UserService {
 
@@ -27,7 +29,7 @@ class UserService {
   }
 
   async login(email, password) {
-    const user = await UserSchema.findOne({ email });
+    const user = await UserSchema.findOne({ email }).populate('info');
     if (!user) {
       throw ApiErrors.BadRequest('Пользователь с таким email не найден')
     }
@@ -77,9 +79,9 @@ class UserService {
       throw ApiErrors.BadRequest('Пользователь активирован!')
     }
     const userInfo = await userInfoService.add(info);
-    const updatedUser = await UserSchema.findByIdAndUpdate(user._id, {isActivated: true, info: userInfo._id, scope: 0});
+    const updatedUser = await UserSchema.findByIdAndUpdate(user._id, {isActivated: true, info: userInfo._id, scope: 0},  { new: true });
     await mailService.sendVerifyInfo(user.email);
-    return UserSchema.find({company: updatedUser.company, isActivated: false, role: 'employee'});
+    return updatedUser;
   }
 
   async addManager(email, company) {
@@ -116,6 +118,9 @@ class UserService {
   }
 
   async getUserInfo(id) {
+    if(!id) {
+      throw ApiErrors.BadRequest(`Пользователя не существует`)
+    }
     const candidate = await UserSchema.findById(id)
     if(!candidate) {
       throw ApiErrors.BadRequest(`Пользователя не существует`)
@@ -143,6 +148,42 @@ class UserService {
       return user.info.position !== 'Project manager';
     });
     return { pm, employees}
+  }
+  async getCompanyForUser(userId) {
+    const user = await UserSchema.findById(userId).populate('company');
+    return user.company;
+  }
+  async getEmployeesWithoutUsersAndManager(userId, projectId){
+    if(!userId) {
+      throw ApiErrors.BadRequest(`Неверный id пользователя!`)
+    }
+    const user = await UserSchema.findById(userId);
+    const teams = await TeamSchema.find({ project: projectId })
+      .populate({
+        path: 'user',
+        model: 'User',
+        populate: {
+          path: 'info',
+          model: 'UserInfo'
+        }});
+    if (user.role === 'manager') {
+      const project = await ProjectSchema.findById(projectId).populate({
+        path: 'pm',
+        model: 'User',
+        populate: {
+          path: 'info',
+          model: 'UserInfo'
+        }});
+      if(!project) {
+        throw ApiErrors.BadRequest(`Организация не найдена!`)
+      }
+      teams.push({
+        _id: v4(),
+        user: project.pm,
+        project: project._id
+      })
+    }
+    return teams;
   }
 }
 

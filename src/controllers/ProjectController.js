@@ -1,11 +1,16 @@
 import projectService from "../services/ProjectService.js";
+import { dateConvert } from "../config/date-convert/index.js";
 
 class ProjectController {
   async add(req, res, next) {
     try {
       const {team, ...project} = req.body;
-      const newProject = await projectService.add(team, project);
-      return res.json(newProject);
+      const newProject = await projectService.add(team,
+        {
+          ...project,
+          dateStart: dateConvert(project.dateStart),
+          dateFinish: dateConvert(project.dateFinish)
+        });      return res.json(newProject);
     } catch (e) {
       next(e);
     }
@@ -38,7 +43,12 @@ class ProjectController {
   async update(req, res, next) {
     try {
       const {teamIds, ...project} = req.body;
-      const newProject = await projectService.update(teamIds, project);
+      const newProject = await projectService.update(teamIds,
+        {
+          ...project,
+          dateStart: dateConvert(project.dateStart),
+          dateFinish: dateConvert(project.dateFinish)
+        });
       return res.json(newProject);
     } catch (e) {
       next(e);

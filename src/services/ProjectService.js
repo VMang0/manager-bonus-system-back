@@ -2,10 +2,11 @@ import ProjectSchema from "../entites/ProjectSchema.js";
 import TeamSchema from "../entites/TeamSchema.js";
 import ApiErrors from "../exceptions/api-errors.js";
 import UserSchema from "../entites/UserSchema.js";
+import {dateEndConvert} from "../config/date-convert/index.js";
 
 class ProjectService {
   async add(team, projectInfo) {
-    const project = await ProjectSchema.create(projectInfo);
+    const project = await ProjectSchema.create({...projectInfo, dateFinish: dateEndConvert(projectInfo.dateFinish)});
     if (team.length > 0) {
       team.map( async (employee) => {
         await TeamSchema.create({ user: employee, project: project._id })
@@ -14,6 +15,13 @@ class ProjectService {
     return ProjectSchema.findById(project._id)
       .populate('category')
       .populate('priority')
+      .populate({
+        path: 'creator',
+        model: 'User',
+        populate: {
+          path: 'info',
+          model: 'UserInfo'
+        }})
       .populate({
         path: 'pm',
         model: 'User',
@@ -148,7 +156,6 @@ class ProjectService {
     if (!project) {
       throw ApiErrors.BadRequest(`Проект ${projectInfo.name} не найден в системе!`)
     }
-
     await this.updateTeamMembers(projectInfo, team);
     return ProjectSchema.findById(projectInfo._id)
       .populate('category')

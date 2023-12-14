@@ -8,8 +8,10 @@ const UserSchema = new Schema({
   role: { type: String, enum: ['admin', 'manager', 'employee'], default: 'employee' },
   company: { type: Schema.Types.ObjectId, ref: 'Company' },
   info: { type: Schema.Types.ObjectId, ref: 'UserInfo' },
-  date: { type: Date, default: new Date() },
   image: { type: String },
-});
+  scope: { type: Number },
+},
+  { timestamps: true }
+);
 
 export default model('User', UserSchema)
