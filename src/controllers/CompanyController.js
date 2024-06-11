@@ -6,10 +6,6 @@ class CompanyController {
 
   async add(req, res, next){
     try {
-      const errors = validationResult(req);
-      if(!errors.isEmpty()) {
-        return next(ApiErrors.BadRequest('Ошибка при валидации', errors.array()))
-      }
       const { name } = req.body;
       const company = await companyService.add(name);
       return res.json(company);

@@ -1,10 +1,11 @@
 import bonusService from "../services/BonusService.js";
 
 class BonusController {
+
   async add(req, res, next) {
     try {
-      const bonus = req.body;
-      const newBonus = await bonusService.add(bonus);
+      const { user } = req;
+      const newBonus = await bonusService.add(req.body, user.company);
       return res.json(newBonus);
     } catch (e) {
       next(e);
@@ -12,17 +13,16 @@ class BonusController {
   }
   async update(req, res, next) {
     try {
-      const bonus = req.body;
-      const updateBonus = await bonusService.update(bonus);
+      const updateBonus = await bonusService.update(req.body);
       return res.json(updateBonus);
     } catch (e) {
       next(e);
     }
   }
-  async delete(req, res, next) {
+  async updateStatus(req, res, next) {
     try {
-      const id = req.params.id;
-      const newBonus = await bonusService.delete(id);
+      const { bonusId } = req.params;
+      const newBonus = await bonusService.updateStatus(bonusId);
       return res.json(newBonus);
     } catch (e) {
       next(e);
@@ -30,8 +30,8 @@ class BonusController {
   }
   async getAll(req, res, next) {
     try {
-      const id = req.params.company;
-      const bonuses = await bonusService.getAll(id);
+      const { user } = req;
+      const bonuses = await bonusService.getAll(user);
       return res.json(bonuses);
     } catch (e) {
       next(e);

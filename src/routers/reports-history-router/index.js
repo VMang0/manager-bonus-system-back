@@ -3,6 +3,6 @@ import ReportsHistoryController from "../../controllers/ReportsHistoryController
 
 const ReportsHistoryRouter = new Router();
 
-ReportsHistoryRouter.get('/:id', ReportsHistoryController.getAll)
+ReportsHistoryRouter.get('/:taskId', ReportsHistoryController.getAllTasksReports)
 
 export default ReportsHistoryRouter;

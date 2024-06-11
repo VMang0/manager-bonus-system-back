@@ -4,6 +4,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs/promises';
 import path from 'path';
 import { dateConvert } from "../config/date-convert/index.js";
+import * as stream from 'stream';
 
 cloudinary.config({
   cloud_name: 'dlwy6u0kw',
@@ -29,9 +30,28 @@ class CloudinaryService {
       });
       await fs.unlink(tempFilePath);
       const url = result.secure_url;
-      return {url, fileName};
+      return { url, fileName: file.name };
     } catch (e) {
       console.log(e);
+    }
+  }
+
+  async sendImage (file) {
+    try {
+      const buffer = file.data;
+      return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream({ folder: 'avatars' }, (error, result) => {
+          if (error) return reject(error);
+          resolve(result.secure_url);
+        });
+
+        const bufferStream = new stream.PassThrough();
+        bufferStream.end(buffer);
+        bufferStream.pipe(uploadStream);
+      });
+    } catch (error) {
+      console.error(error);
+      throw new Error('Ошибка при загрузке изображения в Cloudinary');
     }
   }
 }

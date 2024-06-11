@@ -6,7 +6,15 @@ class UserDTO {
   company;
   image;
   scope;
-  info;
+  name;
+  patronymic;
+  lastname;
+  position;
+  level;
+  rank;
+  xp;
+  previousXp;
+
   constructor(model) {
     this.email = model.email;
     this.id = model._id;
@@ -15,7 +23,15 @@ class UserDTO {
     this.company = model.company;
     this.image = model.image;
     this.scope = model.scope;
-    this.info = model.info
+    this.name = model.name;
+    this.patronymic = model.patronymic;
+    this.lastname = model.lastname;
+    this.position = model.position;
+    this.level = model.level;
+
+    this.rank = model.rank;
+    this.xp = model.xp;
+    this.previousXp = model.previousXp;
   }
 }
 

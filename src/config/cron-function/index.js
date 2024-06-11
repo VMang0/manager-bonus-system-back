@@ -1,10 +1,10 @@
 import cron from "node-cron";
-import TaskService from "../../services/TaskService.js";
+import BonusRequestService from "../../services/BonusRequestService.js";
 
-export const startCronJobs = () => {
-  cron.schedule('*/10 * * * *', async () => {
+export const startCronJobsWithBonus = () => {
+  cron.schedule('0 0 * * *', async () => {
     try {
-      await TaskService.expiredTasks();
+      await BonusRequestService.expiredRequest();
     } catch (error) {
       console.error('Error in cron job:', error);
     }

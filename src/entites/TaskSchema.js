@@ -3,17 +3,18 @@ import { model, Schema } from 'mongoose';
 const TaskSchema = new Schema({
   name: { type: String },
   description: { type: String },
-  dateStart: { type: Date, default: new Date() },
-  dateFinish: { type: Date },
-  deadline: { type: Date, default: new Date() },
-  priority: { type: Schema.Types.ObjectId, ref: 'Priority' },
-  complexity: { type: Schema.Types.ObjectId, ref: 'TaskComplexity'},
+  priority: { type: String },
+  complexity: { type: String },
   creator: { type: Schema.Types.ObjectId, ref: 'User' },
   executor: { type: Schema.Types.ObjectId, ref: 'User' },
   project: { type: Schema.Types.ObjectId, ref: 'Project' },
-  status: { type: String, enum: ['completed', 'in progress', 'off track', 'checked', 'expired'], default: 'in progress' },
+  status: { type: String, enum: ['completed', 'in progress', 'rejected', 'checked'], default: 'in progress' },
   attempt: { type: Number, default: 1 },
   ball: { type: Number, default: 0 },
+  estimation: { type: Number, default: 5 },
+  spendEstimation: { type: Number, default: 0 },
+
+  xpGained: { type: Number, default: 0 },
 },
   { timestamps: true }
 );

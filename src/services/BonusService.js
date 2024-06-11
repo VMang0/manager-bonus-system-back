@@ -1,40 +1,42 @@
 import BonusShema from "../entites/BonusShema.js";
 import CompanySchema from "../entites/CompanySchema.js";
 import ApiErrors from "../exceptions/api-errors.js";
+import companyService from './CompanyService.js';
 
 class BonusService {
-  async add(info) {
-    const company = await CompanySchema.findById(info.company);
-    if (!company) {
-      throw ApiErrors.BadRequest(`Данной орагнизации нет в системе!`)
+
+  async getBonus(bonusId) {
+    const bonus = await BonusShema.findById(bonusId);
+    if (!bonus) {
+      throw ApiErrors.BadRequest(`Произошла ошибка при получении бонуса!`)
     }
-    const bonus = await BonusShema.create(info);
     return bonus;
   }
-  async update(info) {
-    const bonus = await BonusShema.findById(info._id);
-    if (!bonus) {
-      throw ApiErrors.BadRequest(`Данного юонуса нет в системе!`)
-    }
-    await BonusShema.findByIdAndUpdate(info._id, info);
-    const newBonus = await BonusShema.findById(info._id);
-    return newBonus;
-  }
-  async delete(id) {
-    const bonus = await BonusShema.findById(id);
-    if (!bonus) {
-      throw ApiErrors.BadRequest(`Данного юонуса нет в системе!`)
-    }
-    const newBonus = await BonusShema.findByIdAndUpdate(id, { isView: false });
-    return newBonus;
-  }
-  async getAll(id) {
-    const company = await CompanySchema.findById(id);
-    if (!company) {
-      throw ApiErrors.BadRequest(`Данной орагнизации нет в системе!`)
-    }
-    const bonus = await BonusShema.find({ company: id, isView: true });
+
+  async add(bonusInfo, companyId) {
+    const company = await companyService.getCompany(companyId);
+    const bonus = await BonusShema.create({ ...bonusInfo, company });
     return bonus;
+  }
+
+  async update(bonusInfo) {
+    await this.getBonus(bonusInfo.id);
+    const updatedBonus = await BonusShema.findByIdAndUpdate(bonusInfo.id, bonusInfo, { new: true });
+    return updatedBonus;
+  }
+
+  async updateStatus(bonusId) {
+    const bonus = await this.getBonus(bonusId);
+    const updatedBonus = await BonusShema.findByIdAndUpdate(bonusId, { isView: !bonus.isView }, { new: true });
+    return updatedBonus;
+  }
+  
+  async getAll(user) {
+    await companyService.getCompany(user.company);
+    let request = { company: user.company };
+    if (user.role === 'employee') request = { ...request, isView: true }
+    const bonuses = await BonusShema.find(request);
+    return bonuses;
   }
 }
 

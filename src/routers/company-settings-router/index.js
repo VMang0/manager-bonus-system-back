@@ -3,11 +3,8 @@ import CompanySettingsController from "../../controllers/CompanySettingsControll
 
 const CompanySettingsRouter = new Router();
 
-CompanySettingsRouter.post('/', CompanySettingsController.add)
-CompanySettingsRouter.get('/:companyId', CompanySettingsController.getOne)
-CompanySettingsRouter.get('/', CompanySettingsController.getAll)
-CompanySettingsRouter.put('/', CompanySettingsController.update)
-CompanySettingsRouter.post('/culc/:companyId', CompanySettingsController.culcBall)
-
+CompanySettingsRouter.get('', CompanySettingsController.getSettings)
+CompanySettingsRouter.put('', CompanySettingsController.updateSettings)
+CompanySettingsRouter.post('/calculate', CompanySettingsController.calculateBall)
 
 export default CompanySettingsRouter;
