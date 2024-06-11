@@ -8,7 +8,7 @@ class CategoryService {
     if (findCategory) {
       throw ApiErrors.BadRequest(`Категория ${name} уже существует!`)
     }
-    const category = await ProjectCategorySchema.create({name});
+    const category = await ProjectCategorySchema.create({ name });
     return category;
   }
 

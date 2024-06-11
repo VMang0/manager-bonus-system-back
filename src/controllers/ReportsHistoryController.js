@@ -1,10 +1,10 @@
 import reportsHistoryService from "../services/ReportsHistoryService.js";
 
 class ReportsHistoryController {
-  async getAll(req, res, next) {
+  async getAllTasksReports(req, res, next) {
     try {
-      const id = req.params.id;
-      const project = await reportsHistoryService.getAllFiles(id);
+      const { taskId } = req.params;
+      const project = await reportsHistoryService.getAllTasksReports(taskId);
       return res.json(project);
     } catch (e) {
       next(e);

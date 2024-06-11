@@ -7,11 +7,9 @@ const upload = multer({ storage: storage });
 
 const TaskRouter = new Router();
 
-TaskRouter.post('/add', TaskController.add)
-TaskRouter.get('/', TaskController.getAll)
-TaskRouter.get('/:id/:projectId', TaskController.getUsersTasks)
-TaskRouter.post('/completion/:id', upload.single('file'), TaskController.sendTask)
-TaskRouter.post('/allow', TaskController.allowTask)
-TaskRouter.post('/reject', TaskController.rejectTask)
+TaskRouter.post('', TaskController.addTask)
+TaskRouter.get('/:projectId', TaskController.getProjectTasks)
+TaskRouter.post('/:taskId', TaskController.addTaskTracking)
+TaskRouter.put('/:taskId', TaskController.reviewedTask)
 
 export default TaskRouter;

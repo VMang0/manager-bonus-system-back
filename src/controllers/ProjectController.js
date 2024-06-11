@@ -1,65 +1,61 @@
 import projectService from "../services/ProjectService.js";
-import { dateConvert } from "../config/date-convert/index.js";
 
 class ProjectController {
+
   async add(req, res, next) {
     try {
-      const {team, ...project} = req.body;
-      const newProject = await projectService.add(team,
-        {
-          ...project,
-          dateStart: dateConvert(project.dateStart),
-          dateFinish: dateConvert(project.dateFinish)
-        });      return res.json(newProject);
-    } catch (e) {
-      next(e);
-    }
-  }
-  async getAll(req, res, next) {
-    try {
-      const project = await projectService.getAll();
-      return res.json(project);
-    } catch (e) {
-      next(e);
-    }
-  }
-  async getAllUsersProject(req, res, next) {
-    try {
-      const id = req.params.id;
-      const project = await projectService.getAllUsersProject(id);
-      return res.json(project);
-    } catch (e) {
-      next(e);
-    }
-  }
-  async getProjectTeam(req, res, next) {
-    try {
-      const team = await projectService.getProjectTeam();
-      return res.json(team);
-    } catch (e) {
-      next(e);
-    }
-  }
-  async update(req, res, next) {
-    try {
-      const {teamIds, ...project} = req.body;
-      const newProject = await projectService.update(teamIds,
-        {
-          ...project,
-          dateStart: dateConvert(project.dateStart),
-          dateFinish: dateConvert(project.dateFinish)
-        });
+      const { user } = req;
+      const newProject = await projectService.add(req.body, user)
       return res.json(newProject);
     } catch (e) {
       next(e);
     }
   }
 
-  async delete(req, res, next) {
+  async getProjects(req, res, next) {
     try {
-      const idProject = req.params.id;
-      await projectService.delete(idProject);
-      return res.json('Удаление прошло успешно');
+      const { user } = req;
+      const project = await projectService.getProjects(user.id);
+      return res.json(project);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async archiveProject(req, res, next) {
+    try {
+      const { projectId } = req.params;
+      await projectService.archiveProject(projectId);
+      return res.json('');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async updateProject(req, res, next) {
+    try {
+      const updatedProject = await projectService.updateProject(req.body);
+      return res.json(updatedProject);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getProjectTeam(req, res, next) {
+    try {
+      const { projectId } = req.params;
+      const team = await projectService.getProjectTeam(projectId);
+      return res.json(team);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getProjectPM(req, res, next) {
+    try {
+      const { projectId } = req.params;
+      const team = await projectService.getProjectPM(projectId);
+      return res.json(team);
     } catch (e) {
       next(e);
     }

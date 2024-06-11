@@ -9,14 +9,17 @@ import errorMiddlewares from "./src/middlewares/error-middlewares.js";
 import userRouter from "./src/routers/user-router/index.js";
 import companyRouter from "./src/routers/company-router/index.js";
 import categoryRouter from "./src/routers/category-router/index.js";
-import priorityRouter from "./src/routers/priority-router/index.js";
 import projectRouter from "./src/routers/project-router/index.js";
 import bonusRouter from "./src/routers/bonus-router/index.js";
 import companySettingsRouter from "./src/routers/company-settings-router/index.js";
 import taskRouter from "./src/routers/task-router/index.js";
-import taskComplexityRouter from "./src/routers/task-complexity-router/index.js";
 import reportsHistoryRouter from "./src/routers/reports-history-router/index.js";
-import {startCronJobs} from "./src/config/cron-function/index.js";
+import { startCronJobsWithBonus } from "./src/config/cron-function/index.js";
+import bonusRequestRouter from "./src/routers/bonus-request-router/index.js";
+import chartsRouter from "./src/routers/charts-router/index.js";
+import authMiddlewares from './src/middlewares/auth-middlewares.js';
+import authRouter from './src/routers/auth-router/index.js';
+import analyticsRouter from './src/routers/analytics-router/index.js';
 
 const port = process.env.PORT || 5000;
 const app = express();
@@ -32,20 +35,27 @@ app.use(fileUpload({
   limits: { fileSize: Infinity },
 }));
 
+
+app.use('/api', authRouter)
+app.use('/api/companies', companyRouter)
+
+app.use(authMiddlewares)
 app.use('/api', userRouter)
-app.use('/api/company', companyRouter)
-app.use('/api/category', categoryRouter)
-app.use('/api/priority', priorityRouter)
 app.use('/api/project', projectRouter)
-app.use('/api/bonus', bonusRouter)
-app.use('/api/settings', companySettingsRouter)
+app.use('/api/category', categoryRouter)
 app.use('/api/task', taskRouter)
-app.use('/api/complexity', taskComplexityRouter)
-app.use('/api/reports', reportsHistoryRouter)
+app.use('/api/report', reportsHistoryRouter)
+app.use('/api/settings', companySettingsRouter)
+app.use('/api/bonus', bonusRouter)
+app.use('/api/request', bonusRequestRouter)
+
+app.use('/api/analytics', analyticsRouter)
+
+app.use('/api/charts', chartsRouter)
 
 app.use(errorMiddlewares);
 
-startCronJobs();
+startCronJobsWithBonus();
 
 async function startApp() {
   try {
@@ -56,3 +66,4 @@ async function startApp() {
   }
 }
 startApp();
+export default app;

@@ -1,71 +1,53 @@
 import taskService from "../services/TaskService.js";
-import {dateConvert, dateEndConvert} from "../config/date-convert/index.js";
 
 class TaskController {
 
-  async add(req, res, next){
+  async addTask(req, res, next){
     try {
-      const task = req.body;
-      const newTask = await taskService.add({...task,
-        dateStart: dateConvert(task.dateStart),
-        deadline: dateConvert(task.deadline)
-      });
+      const { user } = req;
+      const { projectId, ...task } = req.body;
+      const newTask = await taskService.addTask(user.id, projectId, task);
       return res.json(newTask);
     } catch (e) {
       next(e)
     }
   }
 
-  async getAll(req, res, next){
+  async getProjectTasks(req, res, next){
     try {
-      const task = await taskService.getAll();
+      const { user } = req;
+      const { projectId } = req.params;
+      const task = await taskService.getProjectTasks(user, projectId);
       return res.json(task);
     } catch (e) {
       next(e)
     }
   }
 
-  async getUsersTasks(req, res, next){
+  async addTaskTracking(req, res, next){
     try {
-      const userId = req.params.id;
-      const projectId = req.params.projectId;
-      const task = await taskService.getUsersTasks(userId, projectId);
+      const { user } = req;
+      const { taskId } = req.params;
+      const files = req.files;
+      let file = null;
+      if (files && files['file']) file = files['file'];
+      const info = JSON.parse(req.body['info']);
+      const task = await taskService.addTaskTracking(user, taskId, info, file);
       return res.json(task);
     } catch (e) {
       next(e)
     }
   }
 
-  async sendTask(req, res, next){
+  async reviewedTask(req, res, next){
     try {
-      const id = req.params.id;
-      const file = req.files['file'];
-      const task = await taskService.sendTask(id, file);
+      const { user } = req;
+      const { taskId } = req.params;
+      const task = await taskService.reviewedTask(user, taskId, req.body);
       return res.json(task);
     } catch (e) {
       next(e)
     }
   }
-
-  async allowTask(req, res, next){
-    try {
-      const { id, ball } = req.body;
-      const task = await taskService.allowTask(id, ball);
-      return res.json(task);
-    } catch (e) {
-      next(e)
-    }
-  }
-
-  async rejectTask(req, res, next){
-    try {
-      const { id, dateStartNew, dateFinishNew } = req.body;
-      const task = await taskService.rejectTask(id, dateConvert(dateStartNew), dateEndConvert(dateFinishNew));
-      return res.json(task);
-    } catch (e) {
-      next(e)
-    }
-  }
-
 }
 export default new TaskController();

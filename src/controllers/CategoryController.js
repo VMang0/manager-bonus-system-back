@@ -1,6 +1,7 @@
 import categoryService from "../services/CategoryService.js";
 
 class CategoryController {
+
   async add(req, res, next) {
     try {
       const {name} = req.body;
@@ -10,6 +11,7 @@ class CategoryController {
       next(e);
     }
   }
+
   async getAll(req, res, next) {
     try {
       const category = await categoryService.getAll();

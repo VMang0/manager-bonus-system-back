@@ -7,9 +7,18 @@ const UserSchema = new Schema({
   activationLink: { type: String },
   role: { type: String, enum: ['admin', 'manager', 'employee'], default: 'employee' },
   company: { type: Schema.Types.ObjectId, ref: 'Company' },
-  info: { type: Schema.Types.ObjectId, ref: 'UserInfo' },
   image: { type: String },
   scope: { type: Number },
+
+  name: { type: String },
+  patronymic: { type: String },
+  lastname: { type: String },
+  position: { type: String },
+  level: { type: String },
+
+  rank: { type: Number, default: 1 },
+  xp: { type: Number, default: 0 },
+  previousXp: { type: Number, default: 0 },
 },
   { timestamps: true }
 );

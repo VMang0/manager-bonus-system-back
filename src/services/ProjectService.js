@@ -1,189 +1,152 @@
 import ProjectSchema from "../entites/ProjectSchema.js";
 import TeamSchema from "../entites/TeamSchema.js";
 import ApiErrors from "../exceptions/api-errors.js";
-import UserSchema from "../entites/UserSchema.js";
-import {dateEndConvert} from "../config/date-convert/index.js";
+import userService from './UserService.js';
 
 class ProjectService {
-  async add(team, projectInfo) {
-    const project = await ProjectSchema.create({...projectInfo, dateFinish: dateEndConvert(projectInfo.dateFinish)});
-    if (team.length > 0) {
-      team.map( async (employee) => {
-        await TeamSchema.create({ user: employee, project: project._id })
-      });
+
+  async getProject(projectId) {
+    const project =  await ProjectSchema.findById(projectId);
+    if (!project) {
+      throw ApiErrors.BadRequest('Проект не найден!')
     }
-    return ProjectSchema.findById(project._id)
-      .populate('category')
-      .populate('priority')
-      .populate({
-        path: 'creator',
-        model: 'User',
-        populate: {
-          path: 'info',
-          model: 'UserInfo'
-        }})
-      .populate({
-        path: 'pm',
-        model: 'User',
-        populate: {
-          path: 'info',
-          model: 'UserInfo'
-        }});
+    return project;
   }
 
-  async getAll() {
-    const projects = await ProjectSchema.find()
-      .populate('category')
-      .populate('priority')
-      .populate({
-        path: 'pm',
-        model: 'User',
-        populate: {
-          path: 'info',
-          model: 'UserInfo'
-        }})
-      .populate({
+  async add({ team, ...info }, user) {
+    let project = await ProjectSchema.create({ ...info, creator: user.id });
+    project = await ProjectSchema.populate(project, [
+      { path: 'pm', model: 'User' },
+      { path: 'creator', model: 'User' }
+    ]);
+
+    if (team && team.length > 0) {
+      const teamDocument = new TeamSchema({ users: team });
+      const teamSaved = await teamDocument.save();
+      project = await ProjectSchema.findByIdAndUpdate(project._id, { team: teamSaved.id }, { new: true })
+        .populate({
+          path: 'pm',
+          model: 'User',
+        })
+        .populate({
           path: 'creator',
           model: 'User',
-          populate: {
-            path: 'info',
-            model: 'UserInfo'
-          }});
-    return projects;
-  }
-
-  async getProjectsByParam(parametr) {
-    const projects = await ProjectSchema.find(parametr)
-      .populate('category')
-      .populate('priority')
-      .populate({
-        path: 'pm',
-        model: 'User',
-        populate: {
-          path: 'info',
-          model: 'UserInfo'
-        }})
-      .populate({
-        path: 'creator',
-        model: 'User',
-        populate: {
-          path: 'info',
-          model: 'UserInfo'
-        }});
-    return projects;
-  }
-  async getProjectsById(id) {
-    const projects = await ProjectSchema.findById(id)
-      .populate('category')
-      .populate('priority')
-      .populate({
-        path: 'pm',
-        model: 'User',
-        populate: {
-          path: 'info',
-          model: 'UserInfo'
-        }})
-      .populate({
-        path: 'creator',
-        model: 'User',
-        populate: {
-          path: 'info',
-          model: 'UserInfo'
-        }});
-    return projects;
-  }
-
-  async getAllUsersProject(id) {
-    const user = await UserSchema.findById(id).populate('info');
-    if (!user) {
-      throw ApiErrors.BadRequest(`Данного пользователя не существует в системе!`)
-    }
-    if (user.info.position === 'Project manager'){
-      return await this.getProjectsByParam({ pm: user._id })
-    } else {
-      const team = await TeamSchema.find({ user: id })
-      const projectsIds = team.map(item => item.project);
-      const projects = await Promise.all(
-        projectsIds.map(async (item) => {
-          return await this.getProjectsById(item);
         })
-      );
-      return projects;
-    }
-  }
-
-  async getProjectTeam() {
-    const teams = await TeamSchema.find()
-      .populate({
-        path: 'user',
-        model: 'User',
-        populate: {
-          path: 'info',
-          model: 'UserInfo'
-        }});
-
-    const teamGroup = teams.reduce((acc, current) => {
-      const projectId = current.project.toString();
-      const existingGroup = acc.find(group => {
-        return group._id.toString() === projectId;
-      });
-      if (existingGroup) {
-        existingGroup.team.push(current.user);
-      } else {
-        acc.push({
-          _id: projectId,
-          team: [current.user]
+        .populate({
+          path: 'team',
+          model: 'Team',
+          populate: {
+            path: 'users',
+            model: 'User',
+          },
         });
-      }
-      return acc;
-    }, []);
-    return teamGroup;
-  }
-
-  async updateTeamMembers (project, updatedTeamIds) {
-    const currentTeam = await TeamSchema.find({ project: project._id });
-    const currentTeamIds = currentTeam.map((teamMember) => teamMember.user.toString());
-
-    const newMembers = updatedTeamIds.filter((teamMember) => !currentTeamIds.includes(teamMember.toString()));
-    const removedMembers = currentTeam.filter((teamMember) => !updatedTeamIds.includes(teamMember.user.toString()));
-
-    await TeamSchema.insertMany(newMembers.map((employee) => ({ user: employee, project: project._id })));
-    await TeamSchema.deleteMany({ _id: { $in: removedMembers.map((teamMember) => teamMember._id) } });
-  }
-
-  async update(team, projectInfo) {
-    const project = await ProjectSchema.findByIdAndUpdate(projectInfo._id, projectInfo);
-    if (!project) {
-      throw ApiErrors.BadRequest(`Проект ${projectInfo.name} не найден в системе!`)
+    } else {
+      const teamDocument = new TeamSchema({ users: [] });
+      const teamSaved = await teamDocument.save();
+      project = await ProjectSchema.findByIdAndUpdate(project._id, { team: teamSaved.id }, { new: true })
+        .populate({
+          path: 'pm',
+          model: 'User',
+        })
+        .populate({
+          path: 'creator',
+          model: 'User',
+        })
+        .populate({
+          path: 'team',
+          model: 'Team',
+          populate: {
+            path: 'users',
+            model: 'User',
+          },
+        });
     }
-    await this.updateTeamMembers(projectInfo, team);
-    return ProjectSchema.findById(projectInfo._id)
-      .populate('category')
-      .populate('priority')
+    return project;
+  }
+
+  async getProjects(userId) {
+    const user = await userService.getUser(userId);
+    let condition = {};
+    if (user.role === 'manager') {
+      condition = { creator: user.id, isArchive: false }
+    } else if (user.position === 'Project Manager') {
+      condition = { pm: user.id, isArchive: false }
+    } else {
+      const teamsWithUser = await TeamSchema.find({ users: user.id }).select('_id');
+      const teamIds = teamsWithUser.map(team => team._id);
+      condition = { team: { $in: teamIds }, isArchive: false };
+    }
+    const projects = await ProjectSchema.find(condition)
       .populate({
         path: 'pm',
         model: 'User',
-        populate: {
-          path: 'info',
-          model: 'UserInfo'
-        }})
+      })
       .populate({
         path: 'creator',
         model: 'User',
+      })
+      .populate({
+        path: 'team',
+        model: 'Team',
         populate: {
-          path: 'info',
-          model: 'UserInfo'
-        }});
+          path: 'users',
+          model: 'User',
+        },
+      });
+    return projects;
   }
 
-  async delete(id) {
-    const project = await ProjectSchema.findById(id);
-    if (!project) {
-      throw ApiErrors.BadRequest(`Проект не найден в системе!`)
+  async archiveProject(projectId) {
+    await this.getProject(projectId);
+    await ProjectSchema.findByIdAndUpdate(projectId, { isArchive: true });
+  }
+
+  async updateProject({ team, id, ...info }) {
+    const project = await ProjectSchema.findByIdAndUpdate(id, info);
+    if (team) {
+      await TeamSchema.findByIdAndUpdate(project.team._id, { users: team })
     }
-    const currentTeam = await TeamSchema.find({ project: id });
-    await TeamSchema.deleteMany({ _id: { $in: currentTeam.map((teamMember) => teamMember._id) } });
-    return ProjectSchema.findByIdAndDelete(id);
+    const updatedProject = await ProjectSchema.findById(project._id)
+      .populate({
+        path: 'pm',
+        model: 'User',
+      })
+      .populate({
+        path: 'creator',
+        model: 'User',
+      })
+      .populate({
+        path: 'team',
+        model: 'Team',
+        populate: {
+          path: 'users',
+          model: 'User',
+        },
+      });
+    return updatedProject;
+  }
+
+  async getProjectTeam(projectId) {
+    let project = await this.getProject(projectId);
+    project = await ProjectSchema.populate(project, [
+      {
+        path: 'team',
+        model: 'Team',
+        populate: {
+          path: 'users',
+          model: 'User'
+        }
+      }
+    ]);
+    return project?.team?.users;
+  }
+
+  async getProjectPM(projectId) {
+    let project = await this.getProject(projectId);
+    project = await ProjectSchema.populate(project, [
+      { path: 'pm', model: 'User' }
+    ]);
+    return project.pm;
   }
 }
 export default new ProjectService();

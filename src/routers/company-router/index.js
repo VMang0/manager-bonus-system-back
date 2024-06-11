@@ -1,12 +1,9 @@
-import Router from 'express'
-import {body} from "express-validator";
+import Router from 'express';
 import CompanyController from "../../controllers/CompanyController.js";
 
-const userRouter = new Router();
+const companyRouter = new Router();
 
-userRouter.post('/',
-  body('name').isLength({min: 1, max: 100}),
-  CompanyController.add)
-userRouter.get('/all', CompanyController.getAll)
+companyRouter.post('', CompanyController.add)
+companyRouter.get('', CompanyController.getAll)
 
-export default userRouter;
+export default companyRouter;

@@ -1,23 +1,18 @@
 import Router from 'express'
-import {body} from "express-validator";
 import UserController from "../../controllers/UserController.js";
 
 const userRouter = new Router();
 
-userRouter.post('/registration',
-  body('email').isEmail(),
-  body('password').isLength({min: 3, max: 32}),
-  UserController.registration)
-userRouter.post('/login', UserController.login)
-userRouter.post('/logout', UserController.logout)
-userRouter.get('/refresh', UserController.refresh)
-userRouter.get('/users/activate/:company', UserController.getUsersForActivate)
-userRouter.post('/user/verify', UserController.verifyUser)
-userRouter.post('/add/manager', UserController.addManager)
-userRouter.post('/manager/verify', UserController.verifyManager)
-userRouter.get('/user/:id', UserController.getUserInfo)
-userRouter.get('/manager/all', UserController.getManagers)
-userRouter.get('/users/:company', UserController.getEmployeesForCompany)
-userRouter.get('/users/task/:user/:project', UserController.getEmployeesWithoutUsersAndManager)
+userRouter.get('/user', UserController.getUser)
+userRouter.post('/info', UserController.addUserInformation)
+userRouter.get('/user/activate', UserController.getUsersForActivate)
+userRouter.get('/user/all', UserController.getEmployeesWithoutPms)
+
+userRouter.get('/managers', UserController.getManagers)
+userRouter.post('/managers', UserController.addManager)
+
+userRouter.get('/pm', UserController.getPMs)
+userRouter.get('/user/employees', UserController.getEmployeesForCompany)
+userRouter.put('/user/image', UserController.updateImage)
 
 export default userRouter;

@@ -3,11 +3,11 @@ import ProjectController from "../../controllers/ProjectController.js";
 
 const ProjectRouter = new Router();
 
-ProjectRouter.post('/add', ProjectController.add)
-ProjectRouter.get('/all', ProjectController.getAll)
-ProjectRouter.get('/user/:id', ProjectController.getAllUsersProject)
-ProjectRouter.get('/team', ProjectController.getProjectTeam)
-ProjectRouter.post('/update', ProjectController.update)
-ProjectRouter.delete('/delete/:id', ProjectController.delete)
+ProjectRouter.post('', ProjectController.add)
+ProjectRouter.get('', ProjectController.getProjects)
+ProjectRouter.put('', ProjectController.updateProject)
+ProjectRouter.put('/archive/:projectId', ProjectController.archiveProject)
+ProjectRouter.get('/team/:projectId', ProjectController.getProjectTeam)
+ProjectRouter.get('/pm/:projectId', ProjectController.getProjectPM)
 
 export default ProjectRouter;
